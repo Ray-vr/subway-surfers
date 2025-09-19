@@ -1,0 +1,69 @@
+body {
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: sans-serif;
+    flex-direction: column;
+}
+
+#game {
+    width: 600px;
+    height: 200px;
+    border: 1px solid black;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(#b0e0e6, #f0f8ff);
+}
+
+#character {
+    width: 20px;
+    height: 50px;
+    background-color: red;
+    position: absolute;
+    top: 150px;
+    left: 50px;
+}
+
+#obstacle {
+    width: 20px;
+    height: 20px;
+    background-color: blue;
+    position: absolute;
+    top: 180px;
+    right: 0;
+    animation: obstacle-animation 2s infinite linear;
+}
+
+@keyframes obstacle-animation {
+    0% {
+        right: -20px;
+    }
+    100% {
+        right: 600px;
+    }
+}
+
+.jump {
+    animation: jump-animation 0.5s linear;
+}
+
+@keyframes jump-animation {
+    0% {
+        top: 150px;
+    }
+    50% {
+        top: 50px;
+    }
+    100% {
+        top: 150px;
+    }
+}
+
+#score-container {
+    margin-top: 20px;
+    font-size: 1.5em;
+    color: #333;
+}
