@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Endless Runner</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Endless Runner 3D</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
 </head>
 <body>
-    <div id="game">
-        <div id="character"></div>
-        <div id="obstacle"></div>
-    </div>
-    <div id="score-container">Score: <span id="score">0</span></div>
+    <!-- Import the Three.js library from a CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Your game script -->
     <script src="script.js"></script>
 </body>
 </html>
