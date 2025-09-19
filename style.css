@@ -1,69 +1,114 @@
-body {
-    background-color: #f0f0f0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    font-family: sans-serif;
-    flex-direction: column;
-}
+// --- Scene Setup ---
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-#game {
-    width: 600px;
-    height: 200px;
-    border: 1px solid black;
-    overflow: hidden;
-    position: relative;
-    background: linear-gradient(#b0e0e6, #f0f8ff);
-}
+// --- Lighting ---
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+directionalLight.position.set(0, 10, 5);
+scene.add(directionalLight);
 
-#character {
-    width: 20px;
-    height: 50px;
-    background-color: red;
-    position: absolute;
-    top: 150px;
-    left: 50px;
-}
+// --- Game Objects ---
+const roadWidth = 10;
+const roadGeometry = new THREE.PlaneGeometry(roadWidth, 200);
+const roadMaterial = new THREE.MeshBasicMaterial({ color: 0x444444, side: THREE.DoubleSide });
+const road = new THREE.Mesh(roadGeometry, roadMaterial);
+road.rotation.x = -Math.PI / 2;
+road.position.z = -100;
+scene.add(road);
 
-#obstacle {
-    width: 20px;
-    height: 20px;
-    background-color: blue;
-    position: absolute;
-    top: 180px;
-    right: 0;
-    animation: obstacle-animation 2s infinite linear;
-}
+const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+const playerMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+const player = new THREE.Mesh(playerGeometry, playerMaterial);
+player.position.set(0, 0.5, 5);
+scene.add(player);
 
-@keyframes obstacle-animation {
-    0% {
-        right: -20px;
+const obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
+const obstacleMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff });
+const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+obstacle.position.set(0, 0.5, -50);
+scene.add(obstacle);
+
+// --- Game Logic ---
+let score = 0;
+let isJumping = false;
+let gameIsOver = false;
+
+// Camera Position
+camera.position.z = 10;
+camera.position.y = 5;
+camera.rotation.x = -0.2;
+
+// Animate the game loop
+function animate() {
+    if (gameIsOver) return;
+
+    requestAnimationFrame(animate);
+
+    // Obstacle movement
+    obstacle.position.z += 0.5;
+    if (obstacle.position.z > 10) {
+        obstacle.position.z = -50;
+        obstacle.position.x = (Math.random() - 0.5) * (roadWidth - 2);
+        score++;
     }
-    100% {
-        right: 600px;
+
+    // Player jump logic
+    if (isJumping) {
+        player.position.y += 0.2;
+        if (player.position.y >= 3) {
+            isJumping = 'down';
+        }
+    } else if (isJumping === 'down') {
+        player.position.y -= 0.2;
+        if (player.position.y <= 0.5) {
+            player.position.y = 0.5;
+            isJumping = false;
+        }
     }
+
+    // Collision detection
+    const playerBox = new THREE.Box3().setFromObject(player);
+    const obstacleBox = new THREE.Box3().setFromObject(obstacle);
+    if (playerBox.intersectsBox(obstacleBox)) {
+        gameIsOver = true;
+        alert(`Game Over! Score: ${score}`);
+        location.reload();
+    }
+    
+    // Update score
+    document.getElementById('score').innerText = score;
+
+    renderer.render(scene, camera);
 }
 
-.jump {
-    animation: jump-animation 0.5s linear;
-}
+// --- Event Listeners ---
+window.addEventListener('keydown', (event) => {
+    if (event.code === 'Space' && !isJumping) {
+        isJumping = true;
+    }
+    if (event.code === 'ArrowLeft' && player.position.x > -roadWidth / 2 + 1) {
+        player.position.x -= 1;
+    }
+    if (event.code === 'ArrowRight' && player.position.x < roadWidth / 2 - 1) {
+        player.position.x += 1;
+    }
+});
 
-@keyframes jump-animation {
-    0% {
-        top: 150px;
-    }
-    50% {
-        top: 50px;
-    }
-    100% {
-        top: 150px;
-    }
-}
+// Add score display to HTML
+const scoreElement = document.createElement('div');
+scoreElement.id = 'score-container';
+scoreElement.innerHTML = `Score: <span id="score">0</span>`;
+scoreElement.style.position = 'absolute';
+scoreElement.style.top = '10px';
+scoreElement.style.left = '10px';
+scoreElement.style.color = 'white';
+scoreElement.style.fontSize = '24px';
+document.body.appendChild(scoreElement);
 
-#score-container {
-    margin-top: 20px;
-    font-size: 1.5em;
-    color: #333;
-}
+animate();
+
